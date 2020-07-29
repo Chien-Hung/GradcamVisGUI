@@ -2,4 +2,4 @@
 Visulization GUI for gradcam and gradcam++
 
 
-[![alt tag](./demo/GradcamVisGUI.png)]
+![alt tag](./demo/GradcamVisGUI.png)
