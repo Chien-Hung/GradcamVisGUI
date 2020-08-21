@@ -463,6 +463,7 @@ parser = argparse.ArgumentParser(description="DetVisGUI")
 # dataset information
 parser.add_argument('--img_root', default='images', help='data image path')
 parser.add_argument('--output', default='output', help='data image path')
+parser.add_argument('-c', default='english', choices=['english', 'chinese'], help='category language')
 
 args = parser.parse_args()
 
@@ -495,9 +496,10 @@ class dataset:
 
     def get_singleImg_dets(self, name):
         return self.img_det[name]
-
+    
     def get_category_name(self):
-        with open('cetogory.txt' , 'r') as f: 
+        filename = 'category.txt' if args.c == 'english' else 'category_chinese.txt'
+        with open(filename , 'r') as f: 
             data = f.readlines() 
         data = [d[:-1] for d in data]
         return data
@@ -512,7 +514,7 @@ class vis_tool:
         self.info = StringVar()
         self.info_label = Label(self.window, bg='yellow', width=4, textvariable=self.info)
 
-        self.listBox1 = Listbox(self.window, width=40, height=30, font=('Times New Roman', 10))
+        self.listBox1 = Listbox(self.window, width=45, height=29, font=('Times New Roman', 10))
         self.scrollbar1 = Scrollbar(self.window, width=15, orient="vertical")
 
         self.listBox1_info = StringVar()
@@ -525,17 +527,17 @@ class vis_tool:
         self.photo = ImageTk.PhotoImage(self.img)
         self.label_img = Label(self.window, image=self.photo)
 
-        self.combo_label = Label(self.window, bg='yellow', width=10, height=1, text='Show Category', font=('Arial', 11))
+        self.combo_label = Label(self.window, bg='yellow', width=12, height=1, text='Show Category', font=('Arial', 11))
         self.combo_category = ttk.Combobox(self.window, font=('Arial', 11), values=self.data_info.aug_category.combo_list)
         self.combo_category.current(0)
 
-        self.combo_label3 = Label(self.window, bg='yellow', width=10, height=1, text='Model', font=('Arial', 11))
+        self.combo_label3 = Label(self.window, bg='yellow', width=12, height=1, text='Model', font=('Arial', 11))
         self.combo_category3 = ttk.Combobox(self.window, font=('Arial', 11), values=self.data_info.model_list)
         self.combo_category3.current(0)
 
-        self.find_label = Label(self.window, font=('Arial', 11), bg='yellow', width=10, height=1, text="find")
+        self.find_label = Label(self.window, font=('Arial', 11), bg='yellow', width=12, height=1, text="find")
         self.find_name = ""
-        self.find_entry = Entry(self.window, font=('Arial', 11), textvariable=StringVar(self.window, value=str(self.find_name)), width=10)
+        self.find_entry = Entry(self.window, font=('Arial', 11), textvariable=StringVar(self.window, value=str(self.find_name)), width=15)
         self.find_button = Button(self.window, text='Enter', height=1, command=self.findname)
 
         self.listBox1_idx = 0  # image listBox
@@ -604,7 +606,6 @@ class vis_tool:
         self.img_name = name
         self.img = img
         self.show_img = img
-        img = self.scale_img(img)
         self.photo = ImageTk.PhotoImage(img)
         self.label_img.config(image=self.photo)
         self.window.update_idletasks()
@@ -665,29 +666,6 @@ class vis_tool:
         images = Image.fromarray((images * 255).astype(np.uint8))
 
         return images, max_class_idx
-
-
-    def scale_img(self, img):
-        [s_w, s_h] = [1, 1]
-        #pdb.set_trace()
-        # if window size is (1920, 1080), the default max image size is (1440, 810)
-        (fix_width, fix_height) = (1440, 810)
-
-        # change image size according to window size
-        if self.window.winfo_width() != 1:
-            fix_width = (self.window.winfo_width() - self.listBox1.winfo_width() - self.scrollbar1.winfo_width() - 5)
-            fix_height = int(fix_width * 9 / 16)
-
-        # handle image size is too big
-        if img.width > fix_width:
-            s_w = fix_width / img.width
-        if img.height > fix_height:
-            s_h = fix_height / img.height
-
-        scale = min(s_w, s_h)
-
-        img = img.resize((int(img.width * scale), int(img.height * scale)), Image.ANTIALIAS)
-        return img
 
     def save_img(self):
         print('Save Image to ' + os.path.join(self.output, self.img_name))
@@ -792,7 +770,8 @@ class vis_tool:
 
 
     def run(self):
-        self.window.geometry('1280x800+350+100')
+        self.window.geometry('1030x515+450+220')
+        # self.window.geometry('1280x800+350+100')
 
         # self.menubar.add_command(label='QUIT', command=self.window.quit)
         # self.window.config(menu=self.menubar)                               # display the menu
@@ -819,16 +798,16 @@ class vis_tool:
 
         # ======================= layer 2 =========================
 
-        self.listBox1_label.grid(row=layer2 + 0, column=0, sticky=N + S + E + W, columnspan=12)
+        self.listBox1_label.grid(row=layer2 + 0, column=0, sticky=N + S + E + W, padx=3, columnspan=12)
 
         # find name
-        self.find_label.grid(row=layer2 + 20, column=0, sticky=E + W, columnspan=4)
+        self.find_label.grid(row=layer2 + 20, column=0, sticky=E + W, padx=3, columnspan=4)
         self.find_entry.grid(row=layer2 + 20, column=4, sticky=E + W, columnspan=4)
         self.find_button.grid(row=layer2 + 20, column=8, sticky=E + W, pady=3, columnspan=4)
 
         self.scrollbar1.grid(row=layer2 + 30, column=11, sticky=N + S + W)
         self.label_img.grid(row=layer2, column=12, sticky=N + E, padx=3, rowspan=110, columnspan=15)
-        self.listBox1.grid(row=layer2 + 30, column=0, sticky=N + S + E + W, pady=3, columnspan=11)
+        self.listBox1.grid(row=layer2 + 30, column=0, sticky=N + S + E + W, padx=3, columnspan=11)
 
         self.clear_add_listBox1()
         self.listBox1.bind('<<ListboxSelect>>', self.change_img)
@@ -855,9 +834,4 @@ class aug_category:
 
 if __name__ == "__main__":
     vis_tool().run()
-
-
-# class name
-# https://gist.github.com/yrevar/942d3a0ac09ec9e5eb3a
-# https://blog.csdn.net/LegenDavid/article/details/73335578
 
