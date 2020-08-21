@@ -6,6 +6,21 @@ Visulization GUI for gradcam and gradcam++.
 The visualized image of gradcam and gradcam++ is min-max scale to 0 ~ 255, so the strength is a **relative value** for each layers and channels. 
 It only reflects the information that the selected layer or channel focus on which part in the original image.
 
+# Dependencies:
+- opencv
+- torch
+- torchvision
+
+# Code:
+```
+git clone https://github.com/Chien-Hung/GradcamVisGUI.git
+cd GradcamVisGUI
+```
+
+# Demo:
+```
+python GradcamVisGUI.py
+```
 
 # References:
 
